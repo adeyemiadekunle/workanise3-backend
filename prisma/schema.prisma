@@ -1,0 +1,57 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Define the enum for session status
+enum SessionStatus {
+  READY
+  ACTIVE
+  COMPLETED
+}
+
+model User {
+  id             String    @id @default(cuid())
+  email          String    @unique
+  name           String?
+  balance        Int       @default(0)
+  miningRate     Int       @default(1000) // 1000 points/hour
+  lastSessionEnd DateTime?
+  missedSessions Int       @default(0)
+  sessions       Session[]
+  rewards        Reward[]
+}
+
+model Session {
+  id           String        @id @default(cuid())
+  userId       String
+  user         User          @relation(fields: [userId], references: [id])
+  startTime    DateTime?
+  endTime      DateTime?
+  earnedPoints Int           @default(0)
+  active       Boolean       @default(false)
+  status       SessionStatus @default(READY) // Use the enum here
+  createdAt    DateTime      @default(now())
+  claimed      Boolean       @default(false)
+}
+
+model Reward {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id])
+  rewardType   String
+  rewardAmount Int
+  createdAt    DateTime @default(now())
+}
