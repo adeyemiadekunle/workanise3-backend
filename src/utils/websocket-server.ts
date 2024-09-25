@@ -1,6 +1,6 @@
 import { Server } from 'http';
 import { WebSocketServer } from 'ws';
-import GameService from '../services/gameService';
+import GameService from '../services/game-service';
 import createLogger from '../utils/logger';
 
 const logger = createLogger('WebSocketServer');

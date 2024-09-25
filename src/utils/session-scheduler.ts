@@ -1,5 +1,5 @@
 import cron from 'node-cron';
-import GameService from '../services/gameService';
+import GameService from '../services/game-service';
 import prisma from '../db';
 import { SessionStatus } from '@prisma/client';
 import createLogger from '../utils/logger';

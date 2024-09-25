@@ -23,15 +23,29 @@ enum SessionStatus {
 }
 
 model User {
-  id             String    @id @default(cuid())
-  email          String    @unique
-  name           String?
-  balance        Int       @default(0)
-  miningRate     Int       @default(1000) // 1000 points/hour
+  id             String     @id @default(cuid())
+  username       String?    @unique // Changed to optional
+  firstName      String?
+  lastName       String?
+  isPremium      Boolean    @default(false)
+  telegramId     String     @unique // Removed optional
+  photoUrl       String?
+  chatInstance   String?
+  balance        Int        @default(0)
+  miningRate     Int        @default(1000)
   lastSessionEnd DateTime?
-  missedSessions Int       @default(0)
+  missedSessions Int        @default(0)
   sessions       Session[]
   rewards        Reward[]
+  referralCode   String?    @unique // Added unique constraint
+  referrals      Referral[] @relation("Referrer")
+  referredBy     Referral?  @relation("Referred") // Changed to optional single relation
+  refreshToken   String?
+  updatedAt      DateTime   @updatedAt
+  createdAt      DateTime   @default(now()) // Added createdAt field
+
+  tasks        Task[]
+  transactions Transaction[]
 }
 
 model Session {
@@ -45,6 +59,7 @@ model Session {
   status       SessionStatus @default(READY) // Use the enum here
   createdAt    DateTime      @default(now())
   claimed      Boolean       @default(false)
+  updatedAt    DateTime      @updatedAt
 }
 
 model Reward {
@@ -54,4 +69,57 @@ model Reward {
   rewardType   String
   rewardAmount Int
   createdAt    DateTime @default(now())
+}
+
+model Referral {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation("Referrer", fields: [userId], references: [id])
+  referralId   String   @unique
+  referredUser User     @relation("Referred", fields: [referralId], references: [id])
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Task {
+  title        String
+  id           String     @id @default(cuid())
+  userId       String
+  user         User       @relation(fields: [userId], references: [id])
+  taskType     String
+  category     String
+  taskStatus   TaskStatus @default(PENDING)
+  createdAt    DateTime   @default(now())
+  completedAt  DateTime?
+  points       Int
+  url          String
+  description  String
+  requirements String?
+  updatedAt    DateTime   @updatedAt
+}
+
+enum TaskStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  CLAIMED
+  AVAILABLE 
+}
+
+model Transaction {
+  id                String            @id @default(cuid())
+  userId            String
+  user              User              @relation(fields: [userId], references: [id])
+  amount            Int
+  transactionType   String
+  createdAt         DateTime          @default(now())
+  transactionStatus TransactionStatus @default(PENDING)
+  transactionHash   String?
+  updatedAt         DateTime          @updatedAt
+}
+
+enum TransactionStatus {
+  PENDING
+  COMPLETED
+  FAILED
 }
